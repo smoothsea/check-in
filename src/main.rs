@@ -21,7 +21,7 @@ fn main() {
     let mut file = "".to_string();
     match args.next() {
         Some(f) => file = f,
-        None => file = "/etc/checkin.json".to_string(),
+        None => file = "/etc/checkin/config.json".to_string(),
     }
 
     let interval = time::Duration::from_millis(60000);
@@ -31,7 +31,7 @@ fn main() {
         let config: Config = serde_json::from_str(&content).expect("配置文件解析错误");
         let datetime: DateTime<Local> = Local::now();
         let current_time = datetime.format("%R").to_string();
-        let mut check_in_time = "5:00".to_string();
+        let mut check_in_time = "05:00".to_string();
         if let Some(time) = config.check_in_time {
             check_in_time = time;
         }
