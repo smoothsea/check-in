@@ -40,12 +40,20 @@ fn main() {
             if let Some(smzdm) = config.smzdm {
                 let smzdm = Smzdm::new(smzdm);
                 match smzdm.check_in() {
-                    Ok(s) => println!("签到成功"),
-                    Err(e) => println!("签到错误：{}", e),
+                    Ok(s) => info("smzdm:签到成功"),
+                    Err(e) => info(format!("smdzm:签到错误：{}", e)),
                 }
             }
         }
 
         thread::sleep(interval);
     }
+}
+
+fn info<T:std::fmt::Display>(message: T)
+{
+    let datetime: DateTime<Local> = Local::now();
+    let current_time = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+
+    println!("{}:  {}", current_time, message);
 }
