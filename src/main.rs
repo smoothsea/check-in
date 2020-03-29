@@ -1,7 +1,7 @@
 mod checkin;
 extern crate chrono;
 
-use crate::checkin::{Smzdm, CheckIn};
+use crate::checkin::{Smzdm, Tieba, CheckIn};
 use std::fs;
 use serde::{Serialize, Deserialize};
 use serde_json::Result;
@@ -11,6 +11,7 @@ use std::{thread, time};
 #[derive(Serialize, Deserialize, Debug)]
 struct Config {
     smzdm: Option<String>,
+    baidutieba: Option<String>,
     check_in_time: Option<String>,
 }
 
@@ -40,9 +41,17 @@ fn main() {
             if let Some(smzdm) = config.smzdm {
                 let smzdm = Smzdm::new(smzdm);
                 match smzdm.check_in() {
-                    Ok(s) => info("smzdm:签到成功"),
-                    Err(e) => info(format!("smdzm:签到错误：{}", e)),
+                    Ok(s) => info("什么值得买:签到成功"),
+                    Err(e) => info(format!("什么值得买:签到错误：{}", e)),
                 }
+            }
+        }
+
+        if let Some(tieba) = config.baidutieba {
+            let tieba = Tieba::new(tieba);
+            match tieba.check_in() {
+                Ok(s) => info("百度贴吧:签到成功"),
+                Err(e) => info(format!("百度贴吧:签到错误：{}", e)),
             }
         }
 
