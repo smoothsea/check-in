@@ -45,13 +45,13 @@ fn main() {
                     Err(e) => info(format!("什么值得买:签到错误：{}", e)),
                 }
             }
-        }
 
-        if let Some(tieba) = config.baidutieba {
-            let tieba = Tieba::new(tieba);
-            match tieba.check_in() {
-                Ok(s) => info("百度贴吧:签到成功"),
-                Err(e) => info(format!("百度贴吧:签到错误：{}", e)),
+            if let Some(tieba) = config.baidutieba {
+                let tieba = Tieba::new(tieba);
+                match tieba.check_in() {
+                    Ok(s) => info("百度贴吧:签到成功"),
+                    Err(e) => info(format!("百度贴吧:签到错误：{}", e)),
+                }
             }
         }
 
