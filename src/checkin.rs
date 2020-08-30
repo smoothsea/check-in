@@ -5,6 +5,7 @@ use regex::Regex;
 use std::result::Result;
 use std::error::Error;
 use serde::{Serialize, Deserialize};
+use crate::function::{info};
 
 pub struct Smzdm {
     cookie: String
@@ -12,6 +13,10 @@ pub struct Smzdm {
 
 pub trait CheckIn {
     fn check_in(&self) -> Result<String, Box<dyn Error>>;
+
+    fn name(&self) -> String;
+
+    fn as_trait(&self) -> &CheckIn;
 }
 
 impl Smzdm {
@@ -46,10 +51,19 @@ impl CheckIn for Smzdm {
             None => return Err(format!("签到返回：{}", body).into()),
         }
     }
+
+    fn name(&self) -> String {
+        "什么值得买".to_string()
+    }
+
+    fn as_trait(&self) -> &CheckIn {
+        self as &CheckIn
+    }
 }
 
 pub struct Tieba {
-    cookie: String
+    cookie: String,
+    do_log: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -58,9 +72,10 @@ struct TiebaItem {
 }
 
 impl Tieba {
-    pub fn new(cookie: String) -> Tieba {
+    pub fn new(cookie: String, do_log: bool) -> Tieba {
         Tieba{
             cookie:cookie,
+            do_log:do_log,
         }
     }
 }
@@ -94,14 +109,33 @@ impl CheckIn for Tieba {
             Ok(v) => list = v,
             Err(e) => return Err("登陆信息错误".into()),
         }
-
-        for item in list.into_iter() {
-            let params = [("ie", "utf8"), ("kw", & item.forum_name)];
-            if let Ok(result) = client.post(signUrl).headers(headers.clone())
-                .form(& params).send() {
+        
+        let mut i = 0;
+        let limit = 2;
+        while i < limit {
+            for item in list.iter() {
+                let params = [("ie", "utf8"), ("kw", & item.forum_name)];
+                if let Ok(mut result) = client.post(signUrl).headers(headers.clone())
+                    .form(& params).send() {
+                    if (self.do_log) {
+                        let mut body = "".to_string();
+                        result.read_to_string(& mut body).unwrap();
+                        info(Box::new(self.as_trait()), body);
+                    }
+                }
             }
+
+            i = i + 1; 
         }
 
         Ok("".to_string())
+    }
+
+    fn name(&self) -> String {
+        "百度贴吧".to_string()
+    }
+
+    fn as_trait(&self) -> &CheckIn {
+        self as &CheckIn
     }
 }

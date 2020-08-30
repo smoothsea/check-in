@@ -1,7 +1,9 @@
 mod checkin;
+mod function;
 extern crate chrono;
 
 use crate::checkin::{Smzdm, Tieba, CheckIn};
+use crate::function::{info};
 use std::fs;
 use serde::{Serialize, Deserialize};
 use serde_json::Result;
@@ -13,6 +15,7 @@ struct Config {
     smzdm: Option<String>,
     baidutieba: Option<String>,
     check_in_time: Option<String>,
+    log: Option<bool>,
 }
 
 fn main() {
@@ -37,20 +40,25 @@ fn main() {
             check_in_time = time;
         }
 
+        let mut do_log = false;
+        if let Some(log) = config.log {
+            do_log = log;
+        }
+
         if (check_in_time == current_time) {
             if let Some(smzdm) = config.smzdm {
                 let smzdm = Smzdm::new(smzdm);
                 match smzdm.check_in() {
-                    Ok(s) => info("什么值得买:签到成功"),
-                    Err(e) => info(format!("什么值得买:签到错误：{}", e)),
+                    Ok(s) => info(Box::new(&smzdm), "签到成功"),
+                    Err(e) => info(Box::new(&smzdm), format!("签到错误：{}", e)),
                 }
             }
 
             if let Some(tieba) = config.baidutieba {
-                let tieba = Tieba::new(tieba);
+                let tieba = Tieba::new(tieba, do_log);
                 match tieba.check_in() {
-                    Ok(s) => info("百度贴吧:签到成功"),
-                    Err(e) => info(format!("百度贴吧:签到错误：{}", e)),
+                    Ok(s) => info(Box::new(&tieba), "签到成功"),
+                    Err(e) => info(Box::new(&tieba), format!("签到错误：{}", e)),
                 }
             }
         }
@@ -59,10 +67,4 @@ fn main() {
     }
 }
 
-fn info<T:std::fmt::Display>(message: T)
-{
-    let datetime: DateTime<Local> = Local::now();
-    let current_time = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
 
-    println!("{}:  {}", current_time, message);
-}
